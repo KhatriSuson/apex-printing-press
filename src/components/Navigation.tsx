@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Phone } from 'lucide-react';
 import Logo from '/public/images/logo.png'; 
@@ -8,6 +8,7 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -19,7 +20,23 @@ const Navigation = () => {
 
   useEffect(() => {
     setIsOpen(false);
+    // Scroll to top when location changes
+    window.scrollTo(0, 0);
   }, [location.pathname]);
+
+  const handleNavigation = (to: string) => {
+    // Clear any cached data if needed
+    if (window.performance && window.performance.clearResourceTimings) {
+      window.performance.clearResourceTimings();
+    }
+    
+    // Force a hard reload if navigating to the same page
+    if (location.pathname === to) {
+      window.location.reload();
+    } else {
+      navigate(to);
+    }
+  };
 
   const navItems = [
     { name: 'Home', to: '/' },
@@ -38,7 +55,7 @@ const Navigation = () => {
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo and Brand */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/" onClick={() => handleNavigation('/')} className="flex items-center space-x-2">
             <img src={Logo} alt="Apex logo" className="h-14 w-auto" />
             <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-apex-blue via-apex-pink to-apex-yellow bg-clip-text text-transparent">
               Apex Printing
@@ -48,14 +65,14 @@ const Navigation = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <Link
+              <button
                 key={item.name}
-                to={item.to}
+                onClick={() => handleNavigation(item.to)}
                 className="text-apex-black hover:text-apex-blue transition-colors duration-300 font-medium relative group"
               >
                 {item.name}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-apex-blue transition-all duration-300 group-hover:w-full"></span>
-              </Link>
+              </button>
             ))}
             <Button
               size="sm"
@@ -68,14 +85,12 @@ const Navigation = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-apex-black hover:text-apex-blue transition-colors duration-300"
-            >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="text-apex-black hover:text-apex-blue transition-colors duration-300"
+          >
+            {isOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
         </div>
 
         {/* Mobile Navigation */}
@@ -84,13 +99,13 @@ const Navigation = () => {
         }`}>
           <div className="py-4 space-y-4 bg-white/95 backdrop-blur-md rounded-lg mt-2 shadow-lg">
             {navItems.map((item) => (
-              <Link
+              <button
                 key={item.name}
-                to={item.to}
+                onClick={() => handleNavigation(item.to)}
                 className="block w-full text-left px-6 py-2 text-apex-black hover:text-apex-blue hover:bg-gray-50 transition-all duration-300"
               >
                 {item.name}
-              </Link>
+              </button>
             ))}
             <div className="px-6 pt-2">
               <Button
